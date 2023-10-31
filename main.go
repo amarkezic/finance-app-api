@@ -20,7 +20,7 @@ func initRouter() {
 	r.HandleFunc("/users/{id}", users.GetUser).Methods("GET")
 	r.HandleFunc("/users", users.CreateUser).Methods("POST")
 	r.HandleFunc("/users/{id}", users.UpdateUser).Methods("PUT")
-	r.HandleFunc("/users/{id}", users.UpdateUser).Methods("DELETE")
+	r.HandleFunc("/users/{id}", users.DeleteUser).Methods("DELETE")
 
 	log.Printf("Listening on %s:%d\n", url, port)
 	err := http.ListenAndServe(fmt.Sprintf(":%d", port), r)
@@ -32,5 +32,6 @@ func initRouter() {
 
 func main() {
 	core.InitDB()
+	core.InitValidation()
 	initRouter()
 }
