@@ -20,4 +20,7 @@ func InitDB() {
 	}
 
 	DB.AutoMigrate(&User{})
+	DB.AutoMigrate(&Record{})
+	DB.AutoMigrate(&Project{})
+	DB.AutoMigrate(&Company{})
 }

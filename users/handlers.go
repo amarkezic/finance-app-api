@@ -39,7 +39,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request) {
 	validationResult := core.ValidateStruct(user)
 
 	if len(validationResult) > 0 {
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(validationResult)
 		return
 	}
@@ -59,7 +59,13 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	params := mux.Vars(r)
 	var user core.User
-	core.DB.First(&user, params["id"])
+	result := core.DB.First(&user, params["id"])
+
+	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		w.WriteHeader(http.StatusNotFound)
+		return
+	}
+
 	json.NewDecoder(r.Body).Decode(&user)
 
 	validationResult := core.ValidateStruct(user)
@@ -78,4 +84,26 @@ func DeleteUser(w http.ResponseWriter, r *http.Request) {
 	var user core.User
 	core.DB.Delete(&user, params["id"])
 	w.WriteHeader(http.StatusOK)
+}
+
+func Login(w http.ResponseWriter, r *http.Request) {
+	token, err := core.GenerateToken()
+
+	if err != nil {
+		response := core.AuthResponse{
+			Ok:      false,
+			Message: err.Error(),
+			Data:    nil,
+		}
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	response := core.AuthResponse{
+		Ok:      true,
+		Message: "",
+		Data:    token,
+	}
+
+	json.NewEncoder(w).Encode(response)
 }
