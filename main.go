@@ -31,7 +31,7 @@ func initRouter() {
 	companyRoutes.HandleFunc("/{id}", company.GetCompany).Methods("GET")
 	companyRoutes.HandleFunc("", company.CreateCompany).Methods("POST")
 	companyRoutes.HandleFunc("/{id}", company.UpdateCompany).Methods("PUT")
-	companyRoutes.HandleFunc("", company.DeleteCompany).Methods("DELETE")
+	companyRoutes.HandleFunc("/{id}", company.DeleteCompany).Methods("DELETE")
 
 	r.HandleFunc("/auth", users.Login).Methods("POST")
 

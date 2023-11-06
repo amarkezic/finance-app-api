@@ -48,6 +48,7 @@ type Record struct {
 	ProjectId uint         `json:"projectId" validate:"required"`
 	Status    RecordStatus `json:"status" validate:"required"`
 	Value     float64      `json:"value" validate:"required"`
+	Tax       float64      `json:"tax" validate:"required"`
 }
 
 type Response struct {

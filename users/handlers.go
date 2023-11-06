@@ -10,50 +10,11 @@ import (
 	"gorm.io/gorm"
 )
 
-func GetUsers(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	var users []core.User
-	core.DB.Find(&users)
-	json.NewEncoder(w).Encode(users)
-}
+var GetUsers = core.List[core.User]()
 
-func GetUser(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	params := mux.Vars(r)
-	var user core.User
-	result := core.DB.First(&user, params["id"])
+var GetUser = core.Single[core.User]()
 
-	if errors.Is(result.Error, gorm.ErrRecordNotFound) {
-		w.WriteHeader(http.StatusNotFound)
-		return
-	}
-
-	json.NewEncoder(w).Encode(user)
-}
-
-func CreateUser(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Content-Type", "application/json")
-	var user core.User
-	json.NewDecoder(r.Body).Decode(&user)
-
-	validationResult := core.ValidateStruct(user)
-
-	if len(validationResult) > 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(validationResult)
-		return
-	}
-
-	hashedPassword, err := core.HashPassword(user.Password)
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		return
-	}
-
-	user.Password = hashedPassword
-	core.DB.Create(&user)
-	json.NewEncoder(w).Encode(user)
-}
+var CreateUser = core.Create[core.User]()
 
 func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
@@ -79,12 +40,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(user)
 }
 
-func DeleteUser(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	var user core.User
-	core.DB.Delete(&user, params["id"])
-	w.WriteHeader(http.StatusOK)
-}
+var DeleteUser = core.Delete[core.User]()
 
 func Login(w http.ResponseWriter, r *http.Request) {
 	token, err := core.GenerateToken()
