@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"os"
 	"strings"
 
 	"github.com/gorilla/mux"
@@ -17,9 +18,8 @@ import (
 var DB *gorm.DB
 var err error
 
-const connectionString = "root:Admin.1234@tcp(127.0.0.1:3306)/finance-app?charset=utf8mb4&parseTime=True&loc=Local"
-
 func InitDB() {
+	connectionString := os.Getenv("DB_CONNECTION_STRING")
 	DB, err = gorm.Open(mysql.Open(connectionString), &gorm.Config{})
 	if err != nil {
 		fmt.Println(err.Error())
@@ -35,6 +35,8 @@ func InitDB() {
 func List[T any]() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
+		role := r.Context().Value("role").(string)
+		print(role)
 		var entities []T
 		DB.Find(&entities)
 		json.NewEncoder(w).Encode(entities)

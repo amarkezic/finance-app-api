@@ -20,12 +20,20 @@ const (
 	Paid    RecordStatus = 1
 )
 
+type UserRole string
+
+const (
+	Admin   UserRole = "Admin"
+	Default UserRole = "Default"
+)
+
 type User struct {
 	gorm.Model
-	Email       string `json:"email" validate:"required,email"`
-	Password    string `json:"password" validate:"required,min=8"`
-	DisplayName string `json:"displayName" validate:"required"`
-	CompanyId   uint   `json:"companyId"`
+	Email       string   `json:"email" validate:"required,email"`
+	Password    string   `json:"password" validate:"required,min=8"`
+	DisplayName string   `json:"displayName" validate:"required"`
+	Role        UserRole `json:"role" validate:"required"`
+	CompanyId   uint     `json:"companyId"`
 }
 
 type Project struct {
@@ -59,5 +67,5 @@ type Response struct {
 type AuthResponse struct {
 	Ok      bool        `json:"ok"`
 	Message string      `json:"message"`
-	Data    interface{} `json:"data"`
+	Token   interface{} `json:"token"`
 }

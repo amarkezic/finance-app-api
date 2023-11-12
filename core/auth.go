@@ -1,10 +1,13 @@
 package core
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -12,7 +15,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-var jwtSecret = []byte("my_secret_key")
+var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
 
 func HashPassword(password string) (string, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 14)
@@ -23,14 +26,15 @@ func HashPassword(password string) (string, error) {
 	return string(hashedPassword), nil
 }
 
-func CheckPasswordValidity(password string, hash string) bool {
+func CheckPasswordValidity(hash string, password string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 
-	return err != nil
+	return err == nil
 }
 
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
 		authHeader := strings.Split(r.Header.Get("Authorization"), "Bearer ")
 
 		if len(authHeader) != 2 {
@@ -52,6 +56,9 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 			return jwtSecret, nil
 		})
+		claims := decodedToken.Claims.(jwt.MapClaims)
+
+		ctx = context.WithValue(ctx, "role", claims["role"].(string))
 
 		if err != nil || !decodedToken.Valid {
 			response := Response{
@@ -62,13 +69,15 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		next.ServeHTTP(w, r)
+		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
 
-func GenerateToken() (string, error) {
+func GenerateToken(user *User) (string, error) {
+	jwt_expiration, _ := strconv.Atoi(os.Getenv("JWT_EXPIRATION"))
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"createdAt": time.Date(2015, 10, 10, 12, 0, 0, 0, time.UTC).Unix(),
+		"exp":  time.Now().Add(time.Duration(jwt_expiration) * time.Millisecond).Unix(),
+		"role": user.Role,
 	})
 
 	tokenString, err := token.SignedString(jwtSecret)

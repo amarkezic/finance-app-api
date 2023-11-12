@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"amarkezic.github.com/finance-app/company"
 	"amarkezic.github.com/finance-app/core"
@@ -11,19 +12,16 @@ import (
 	"amarkezic.github.com/finance-app/records"
 	"amarkezic.github.com/finance-app/users"
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 )
 
-const port int = 9000
-const url string = "localhost"
-
-func initRouter() {
+func initRouter() *mux.Router {
 	r := mux.NewRouter()
 
 	userRoutes := r.PathPrefix("/users").Subrouter()
 	userRoutes.Use(core.AuthMiddleware)
 	userRoutes.HandleFunc("", users.GetUsers).Methods("GET")
 	userRoutes.HandleFunc("/{id}", users.GetUser).Methods("GET")
-	userRoutes.HandleFunc("", users.CreateUser).Methods("POST")
 	userRoutes.HandleFunc("/{id}", users.UpdateUser).Methods("PUT")
 	userRoutes.HandleFunc("/{id}", users.DeleteUser).Methods("DELETE")
 
@@ -51,18 +49,38 @@ func initRouter() {
 	recordsRoutes.HandleFunc("/{id}", records.UpdateRecord).Methods("PUT")
 	recordsRoutes.HandleFunc("/{id}", records.DeleteRecord).Methods("DELETE")
 
-	r.HandleFunc("/auth", users.Login).Methods("POST")
+	r.HandleFunc("/auth/login", users.Login).Methods("POST")
+	r.HandleFunc("/auth/sign-up", users.CreateUser).Methods("POST")
 
-	log.Printf("Listening on %s:%d\n", url, port)
-	err := http.ListenAndServe(fmt.Sprintf(":%d", port), r)
+	return r
+}
 
+func InitEnv() {
+	env := os.Getenv("ENV")
+	if env == "" {
+		env = "local"
+	}
+
+	godotenv.Load(".env." + env)
+	err := godotenv.Load() // The Original .env
 	if err != nil {
-		log.Fatal(err.Error())
+		log.Fatal("Error loading .env file", err.Error())
 	}
 }
 
 func main() {
+	InitEnv()
 	core.InitDB()
 	core.InitValidation()
-	initRouter()
+	r := initRouter()
+
+	host := os.Getenv("HOST")
+	port := os.Getenv("PORT")
+
+	log.Printf("Listening on %s:%s\n", host, port)
+	err := http.ListenAndServe(fmt.Sprintf(":%s", port), r)
+
+	if err != nil {
+		log.Fatal(err.Error())
+	}
 }

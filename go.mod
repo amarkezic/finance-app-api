@@ -7,6 +7,8 @@ require (
 	golang.org/x/crypto v0.14.0
 )
 
+require github.com/joho/godotenv v1.5.1 // indirect
+
 require (
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
