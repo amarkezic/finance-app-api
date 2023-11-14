@@ -35,8 +35,6 @@ func InitDB() {
 func List[T any]() func(http.ResponseWriter, *http.Request) {
 	return func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
-		role := r.Context().Value("role").(string)
-		print(role)
 		var entities []T
 		DB.Find(&entities)
 		json.NewEncoder(w).Encode(entities)

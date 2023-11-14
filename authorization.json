@@ -1,0 +1,69 @@
+{
+    "Default": {
+        "/companies": {
+            "GET": true,
+            "POST": true
+        },
+        "/companies/{id}": {
+            "GET": true,
+            "PUT": true,
+            "DELETE": true
+        },
+        "/projects": {
+            "GET": true,
+            "POST": true
+        },
+        "/projects/{id}": {
+            "GET": true,
+            "PUT": true,
+            "DELETE": true
+        },
+        "/records": {
+            "GET": true,
+            "POST": true
+        },
+        "/records/{id}": {
+            "GET": true,
+            "PUT": true,
+            "DELETE": true
+        }
+    },
+    "Admin": {
+        "/companies": {
+            "GET": true,
+            "POST": true
+        },
+        "/companies/{id}": {
+            "GET": true,
+            "PUT": true,
+            "DELETE": true
+        },
+        "/projects": {
+            "GET": true,
+            "POST": true
+        },
+        "/projects/{id}": {
+            "GET": true,
+            "PUT": true,
+            "DELETE": true
+        },
+        "/records": {
+            "GET": true,
+            "POST": true
+        },
+        "/records/{id}": {
+            "GET": true,
+            "PUT": true,
+            "DELETE": true
+        },
+        "/users": {
+            "GET": true,
+            "POST": true
+        },
+        "/users/{id}": {
+            "GET": true,
+            "PUT": true,
+            "DELETE": true
+        }
+    }
+}

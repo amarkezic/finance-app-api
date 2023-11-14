@@ -20,6 +20,7 @@ func initRouter() *mux.Router {
 
 	userRoutes := r.PathPrefix("/users").Subrouter()
 	userRoutes.Use(core.AuthMiddleware)
+	userRoutes.Use(core.AuthorizationMiddleware)
 	userRoutes.HandleFunc("", users.GetUsers).Methods("GET")
 	userRoutes.HandleFunc("/{id}", users.GetUser).Methods("GET")
 	userRoutes.HandleFunc("/{id}", users.UpdateUser).Methods("PUT")
@@ -27,6 +28,7 @@ func initRouter() *mux.Router {
 
 	companyRoutes := r.PathPrefix("/companies").Subrouter()
 	companyRoutes.Use(core.AuthMiddleware)
+	companyRoutes.Use(core.AuthorizationMiddleware)
 	companyRoutes.HandleFunc("", company.GetCompanies).Methods("GET")
 	companyRoutes.HandleFunc("/{id}", company.GetCompany).Methods("GET")
 	companyRoutes.HandleFunc("", company.CreateCompany).Methods("POST")
@@ -35,6 +37,7 @@ func initRouter() *mux.Router {
 
 	projectsRoutes := r.PathPrefix("/projects").Subrouter()
 	projectsRoutes.Use(core.AuthMiddleware)
+	projectsRoutes.Use(core.AuthorizationMiddleware)
 	projectsRoutes.HandleFunc("", projects.GetProjects).Methods("GET")
 	projectsRoutes.HandleFunc("/{id}", projects.GetProject).Methods("GET")
 	projectsRoutes.HandleFunc("", projects.CreateProject).Methods("POST")
@@ -43,6 +46,7 @@ func initRouter() *mux.Router {
 
 	recordsRoutes := r.PathPrefix("/records").Subrouter()
 	recordsRoutes.Use(core.AuthMiddleware)
+	recordsRoutes.Use(core.AuthorizationMiddleware)
 	recordsRoutes.HandleFunc("", records.GetRecords).Methods("GET")
 	recordsRoutes.HandleFunc("/{id}", records.GetRecord).Methods("GET")
 	recordsRoutes.HandleFunc("", records.CreateRecord).Methods("POST")
@@ -72,6 +76,7 @@ func main() {
 	InitEnv()
 	core.InitDB()
 	core.InitValidation()
+	core.InitAuthorization()
 	r := initRouter()
 
 	host := os.Getenv("HOST")

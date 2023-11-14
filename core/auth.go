@@ -12,10 +12,12 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt"
+	"github.com/gorilla/mux"
 	"golang.org/x/crypto/bcrypt"
 )
 
 var jwtSecret = []byte(os.Getenv("JWT_SECRET"))
+var authConfig map[string]map[string]map[string]bool
 
 func HashPassword(password string) (string, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), 14)
@@ -56,8 +58,8 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 			return jwtSecret, nil
 		})
-		claims := decodedToken.Claims.(jwt.MapClaims)
 
+		claims := decodedToken.Claims.(jwt.MapClaims)
 		ctx = context.WithValue(ctx, "role", claims["role"].(string))
 
 		if err != nil || !decodedToken.Valid {
@@ -73,6 +75,22 @@ func AuthMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+func AuthorizationMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		role := r.Context().Value("role").(string)
+
+		route, _ := mux.CurrentRoute(r).GetPathTemplate()
+		hasPermission := authConfig[role][route][r.Method]
+
+		if !hasPermission {
+			w.WriteHeader(http.StatusForbidden)
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func GenerateToken(user *User) (string, error) {
 	jwt_expiration, _ := strconv.Atoi(os.Getenv("JWT_EXPIRATION"))
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -83,4 +101,10 @@ func GenerateToken(user *User) (string, error) {
 	tokenString, err := token.SignedString(jwtSecret)
 
 	return tokenString, err
+}
+
+func InitAuthorization() {
+	file, _ := os.Open("./authorization.json")
+
+	json.NewDecoder(file).Decode(&authConfig)
 }
